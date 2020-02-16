@@ -1,0 +1,62 @@
+{
+    "name": "suda-wifi-login",
+    "productName": "suda-wifi-login",
+    "version": "1.0.0",
+    "description": "苏大Wifi自动登录器",
+    "main": "src/index.js",
+    "scripts": {
+        "start": "electron-forge start",
+        "package": "electron-forge package --icon=./suda.ico",
+        "make": "electron-forge make --icon=./suda.ico",
+        "publish": "electron-forge publish",
+        "lint": "eslint src --color"
+    },
+    "keywords": [],
+    "author": "xuzhenyu",
+    "license": "MIT",
+    "config": {
+        "forge": {
+            "make_targets": {
+                "win32": [
+                    "squirrel"
+                ],
+                "darwin": [
+                    "zip"
+                ],
+                "linux": [
+                    "deb",
+                    "rpm"
+                ]
+            },
+            "electronPackagerConfig": {
+                "packageManager": "npm"
+            },
+            "electronWinstallerConfig": {
+                "name": "suda_wifi_login"
+            },
+            "electronInstallerDebian": {},
+            "electronInstallerRedhat": {},
+            "github_repository": {
+                "owner": "",
+                "name": ""
+            },
+            "windowsStoreConfig": {
+                "packageName": "",
+                "name": "sudawifilogin"
+            }
+        }
+    },
+    "dependencies": {
+        "electron-compile": "^6.4.4",
+        "electron-localstorage": "^1.0.5",
+        "electron-squirrel-startup": "^1.0.0",
+        "jquery": "^3.4.1"
+    },
+    "devDependencies": {
+        "babel-plugin-transform-async-to-generator": "^6.24.1",
+        "babel-preset-env": "^1.7.0",
+        "electron-forge": "^5.2.4",
+        "electron-prebuilt-compile": "4.0.0",
+        "eslint-plugin-import": "^2.18.2"
+    }
+}
