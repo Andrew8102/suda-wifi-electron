@@ -6,8 +6,8 @@
     "main": "src/index.js",
     "scripts": {
         "start": "electron-forge start",
-        "package": "electron-forge package --icon=./suda.ico",
-        "make": "electron-forge make --icon=./suda.ico",
+        "package": "electron-forge package",
+        "make": "electron-forge make",
         "publish": "electron-forge publish",
         "lint": "eslint src --color"
     },
@@ -29,7 +29,9 @@
                 ]
             },
             "electronPackagerConfig": {
-                "packageManager": "npm"
+                "packageManager": "npm",
+                "icon":"src/suda",
+                "asar": false
             },
             "electronWinstallerConfig": {
                 "name": "suda_wifi_login"

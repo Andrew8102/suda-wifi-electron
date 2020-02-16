@@ -13,6 +13,7 @@ const createWindow = () => {
   mainWindow = new BrowserWindow({
     width: 380,
     height: 600,
+    icon: __dirname + '/suda.ico'
   });
 
   // and load the index.html of the app.
