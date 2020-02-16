@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <title>suda-wifi 登录器</title>
+    <!-- Bootstrap -->
+    <link href="./bootstrap.css" rel="stylesheet" />
+    <script>
+      window.$ = window.jQuery = require('jquery')
+    </script>
+    <!-- <script src="./jquery.min.js"></script> -->
+
+    <style>
+      html,
+      body {
+        height: 100%;
+      }
+
+      body {
+        padding-top: 10%;
+        background-color: #f5f5f5;
+      }
+
+      span {
+        float: right;
+        padding-right: 5%;
+      }
+    </style>
+    <script type="text/javascript">
+      const storage = require('electron-localStorage')
+
+      function showTimer(tCount) {
+        var temp = tCount
+        var seconds = parseInt(temp % 60)
+        temp = parseInt(temp / 60)
+        var minutes = parseInt(temp % 60)
+        temp = parseInt(temp / 60)
+        var hours = parseInt(temp % 24)
+        temp = parseInt(temp / 24)
+        var days = temp
+        var timeShow =
+          (days > 0 ? days + '天 ' : '') +
+          (hours < 10 ? '0' : '') +
+          hours +
+          ':' +
+          (minutes < 10 ? '0' : '') +
+          minutes +
+          ':' +
+          (seconds < 10 ? '0' : '') +
+          seconds
+        return timeShow
+      }
+      var intervalID
+      $(document).ready(function() {
+        //开启时检测是否登陆
+        $.ajax({
+          type: 'POST',
+          url: 'http://10.9.0.14/index.php/index/init',
+          contentType: 'application/x-www-form-urlencoded',
+          dataType: 'json',
+          error: function(XMLHttpRequest, textStatus, errorThrown) {
+            console.log('通讯异常')
+            alert('通讯异常，可能您已经断网')
+          }, // error
+          // script call was successful
+          success: function(res) {
+            console.log(res)
+            var json = res
+            switch (res.status) {
+              case 0: //用户未登录
+                console.log(res.info)
+
+                if (storage.getItem(`autologin`) != 'false') {
+                  $('#username').attr('value', storage.getItem(`username`))
+                  $('#password').attr('value', storage.getItem(`password`))
+                  $('button#login').click()
+                }
+                break
+              case 1: //用户已经登陆
+                //alert(json.info)
+                self.clearInterval(intervalID) //清计时器
+                var tCount = parseInt(json.logout_timer)
+                $('#logoutform').show()
+                $('#loginform').hide()
+                $('#info').show()
+                $('#info').text('您已经登陆')
+                setTimeout(function() {
+                  $('#info').fadeOut()
+                }, 3000)
+                $('#logout_account').text(json.logout_account + '元')
+                $('#logout_username').text(json.logout_username)
+                $('#logout_ip').text(json.logout_ip)
+                $('#logout_location').text(json.logout_location)
+                $('#logout_timeamount').text(showTimer(json.logout_timeamount))
+                $('#logout_domain').text(json.logout_domain)
+                $('#logout_timer').text(showTimer(tCount))
+                intervalID = self.setInterval(function() {
+                  $('#logout_timer').text(showTimer(++tCount))
+                }, 1000)
+                break
+            }
+          } // success
+        })
+        $('#delall').click(function() {
+          storage.clear()
+          console.log(storage.getAll())
+          alert('清除成功！')
+        })
+        //选择是否自动登录
+        $('#autologin').change(function() {
+          if ($(this).prop('checked')) {
+            //alert("选中");
+            storage.setItem('autologin', 'true')
+            console.log(storage.getAll())
+            //$.cookie('autologin', 'true', { expires: 7 });
+          } else {
+            storage.setItem('autologin', 'false')
+            console.log(storage.getAll())
+            //$.cookie('autologin', 'false', { expires: 7 });
+            //alert("没有选中");
+          }
+        })
+        $('#username').on('blur', function(event) {
+          var username = $(this).attr('id')
+          document.getElementById(username).setAttribute('value', $(this).val())
+        })
+        $('#password').on('blur', function(event) {
+          var password = $(this).attr('id')
+          document.getElementById(password).setAttribute('value', $(this).val())
+        })
+        $('button#login').click(function() {
+          console.log('点击登录按钮')
+          if (!$('#username').attr('value')) {
+            alert('请输入您的学号')
+            return
+          } else if (!$('#password').attr('value')) {
+            alert('请输入您的密码')
+            return
+          } else {
+            var username = $('#username').attr('value')
+            var password = window.btoa($('#password').attr('value'))
+            var enablemacauth = $('#enablemacauth').attr('value')
+          }
+
+          var form = {
+            username: username,
+            password: password,
+            enablemacauth: enablemacauth
+          }
+          console.log(form)
+          $.ajax({
+            type: 'POST',
+            url: 'http://10.9.0.14/index.php/index/login',
+            contentType: 'application/x-www-form-urlencoded',
+            dataType: 'json',
+            cache: false,
+            complete: function() {},
+            // send username and password as parameters to the Perl script
+            data: form,
+            error: function(XMLHttpRequest, textStatus, errorThrown) {
+              console.log('通讯异常，可能是还未给您分配IP')
+            }, // error
+            // script call was successful
+            success: function(res) {
+              console.log(res)
+              var json = res
+              switch (res.status) {
+                case 0: //用户未登录
+                  alert(res.info)
+                  break
+                case 1: //用户已经登陆
+                  //alert(json.info)
+                  storage.setItem('username', $('#username').attr('value'))
+                  storage.setItem('password', $('#password').attr('value'))
+                  self.clearInterval(intervalID) //清计时器
+                  var tCount = parseInt(json.logout_timer)
+                  $('#logoutform').show()
+                  $('#loginform').hide()
+                  $('#info').show()
+                  $('#info').text('您已经登陆')
+                  setTimeout(function() {
+                    $('#info').fadeOut()
+                  }, 3000)
+                  $('#logout_account').text(json.logout_account + '元')
+                  $('#logout_username').text(json.logout_username)
+                  $('#logout_ip').text(json.logout_ip)
+                  $('#logout_location').text(json.logout_location)
+                  $('#logout_domain').text(json.logout_domain)
+                  $('#logout_timeamount').text(
+                    showTimer(json.logout_timeamount)
+                  )
+                  $('#logout_timer').text(showTimer(tCount))
+                  intervalID = self.setInterval(function() {
+                    $('#logout_timer').text(showTimer(++tCount))
+                  }, 1000)
+                  break
+              }
+            } // success
+          }) // ajax
+        })
+        $('button#logout').click(function() {
+          console.log('点击登出按钮')
+          $.ajax({
+            type: 'POST',
+            url: 'http://10.9.0.14/index.php/index/logout',
+            contentType: 'application/x-www-form-urlencoded',
+            dataType: 'json',
+            cache: false,
+            complete: function() {},
+            // send username and password as parameters to the Perl script
+            error: function(XMLHttpRequest, textStatus, errorThrown) {
+              console.log('通讯异常')
+            }, // error
+            // script call was successful
+            success: function(json) {
+              console.log(json)
+              if (json.status == 1) {
+                self.clearInterval(intervalID) //清计时器
+                alert('退出成功')
+                $('#logoutform').hide()
+                $('#loginform').show()
+                $('#info').show()
+                $('#info').text('您已经退出')
+                $('#username').attr('value', storage.getItem(`username`))
+                $('#password').attr('value', storage.getItem(`password`))
+                setTimeout(function() {
+                  $('#info').fadeOut()
+                }, 3000)
+                //login success
+              } else if (json.status == 2) {
+                //first login
+                alert('第一次登陆')
+              } else {
+              }
+            } // success
+          }) // ajax
+        })
+      })
+    </script>
+  </head>
+
+  <body>
+    <div class="container">
+      <!-- Content here -->
+      <div class="text-center">
+        <h2>苏大网关登录器</h2>
+        <p class="lead">
+          适用于15元包月用户的自动登陆工具
+        </p>
+      </div>
+      <div
+        class="alert alert-primary"
+        role="alert"
+        id="info"
+        style="display:none;"
+      ></div>
+      <form id="loginform">
+        <div class="card">
+          <div class="card-body ">
+            <h4 class="mb-3">网关登陆</h4>
+            <div class="form-row">
+              <div class="form-group col-md-6">
+                <label for="username">学号：</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="username"
+                  placeholder=""
+                  value=""
+                />
+              </div>
+              <div class="form-group col-md-6">
+                <label for="password">密码：</label>
+                <input
+                  type="password"
+                  class="form-control"
+                  id="password"
+                  placeholder=""
+                  value=""
+                />
+                <input
+                  type="hidden"
+                  class="form-control"
+                  id="enablemacauth"
+                  placeholder=""
+                  value="1"
+                />
+              </div>
+            </div>
+            <div class="form-group form-check">
+              <input type="checkbox" class="form-check-input" id="autologin" />
+              <label class="form-check-label">打开软件自动登录</label>
+            </div>
+            <button class="btn btn-primary col-md-12" type="button" id="login">
+              登陆网关
+            </button>
+          </div>
+        </div>
+      </form>
+      <form id="logoutform" style="display:none;">
+        <div class="card">
+          <div class="card-body ">
+            <h4 class="mb-3">网关认证退出</h4>
+            <p style="margin-bottom: 10px;">
+              <lable>用 户 名: </lable><span id="logout_username"></span>
+            </p>
+            <p style="margin-bottom: 10px;">
+              <lable>登 陆 域: </lable><span id="logout_domain"></span>
+            </p>
+            <p style="margin-bottom: 10px;">
+              <lable>登 陆 IP: </lable><span id="logout_ip"></span>
+            </p>
+            <p style="margin-bottom: 10px;">
+              <lable>登陆位置: </lable><span id="logout_location"></span>
+            </p>
+            <p style="margin-bottom: 10px;">
+              <lable>账户余额: </lable><span id="logout_account"></span>
+            </p>
+            <p style="margin-bottom: 10px;">
+              <lable>本月已用: </lable><span id="logout_timeamount"></span>
+            </p>
+            <p style="margin-bottom: 10px;">
+              <lable>登陆时长: </lable><span id="logout_timer"></span>
+            </p>
+            <button class="btn btn-primary col-md-12" type="button" id="logout">
+              退出网关
+            </button>
+          </div>
+        </div>
+      </form>
+      <footer class="text-center" style="padding-top:10%">
+        ©️2019 电脑义修小帮手
+      </footer>
+      <footer class="text-center" style="color:#87CEFF" id="delall">
+        <a href="#">清除登陆账号</a>
+      </footer>
+    </div>
+  </body>
+</html>
