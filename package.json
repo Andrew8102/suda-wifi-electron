@@ -37,8 +37,8 @@
             "electronInstallerDebian": {},
             "electronInstallerRedhat": {},
             "github_repository": {
-                "owner": "",
-                "name": ""
+                "owner": "Andrew8102",
+                "name": "suda-wifi-electron"
             },
             "windowsStoreConfig": {
                 "packageName": "",
