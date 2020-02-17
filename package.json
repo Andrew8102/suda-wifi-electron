@@ -30,7 +30,7 @@
             },
             "electronPackagerConfig": {
                 "packageManager": "npm",
-                "icon":"src/suda",
+                "icon": "src/suda",
                 "asar": false
             },
             "electronWinstallerConfig": {

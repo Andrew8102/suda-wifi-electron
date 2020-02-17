@@ -26,8 +26,8 @@ jQuery
 ```js
 cd 本目录
 npm install   //安装依赖
-npm start     //开发调试
-npm make      //编译本项目
+npm run start     //开发调试
+npm run make      //编译本项目
 ```
 
 编译之后会输出到`out/make`文件夹内，编译模式会根据您的系统进行对应修改
